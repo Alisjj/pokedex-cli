@@ -5,11 +5,17 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
+
+	"github.com/alisjj/pokedex/pokecache"
 )
 
 func repl() {
 	reader := bufio.NewScanner(os.Stdin)
-	cfg := &config{}
+	cfg := &config{
+		cache: pokecache.NewCache(5 * time.Minute),
+		l:     Location{},
+	}
 	for {
 		fmt.Print("Pokedex> ")
 		reader.Scan()

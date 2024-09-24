@@ -1,11 +1,11 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
-	"net/http"
 	"os"
 	"os/exec"
+
+	"github.com/alisjj/pokedex/pokecache"
 )
 
 type cliCommand struct {
@@ -15,13 +15,8 @@ type cliCommand struct {
 }
 
 type config struct {
-	Count    int     `json:"count"`
-	Next     *string `json:"next"`
-	Previous *string `json:"previous"`
-	Results  []struct {
-		Name string `json:"name"`
-		URL  string `json:"url"`
-	} `json:"results"`
+	cache pokecache.Cache
+	l     Location
 }
 
 func getCliCommands(*config) map[string]cliCommand {
@@ -83,24 +78,18 @@ func commandHelp() error {
 func commandMap(c *config) error {
 
 	var url string
-	if c.Next != nil {
-		url = *c.Next
+	if c.l.Next != nil {
+		url = *c.l.Next
 	} else {
 		url = "https://pokeapi.co/api/v2/location-area/"
 	}
-	resp, err := http.Get(url)
 
+	err := c.getLocations(url)
 	if err != nil {
 		return err
 	}
 
-	decoder := json.NewDecoder(resp.Body)
-	err = decoder.Decode(&c)
-	if err != nil {
-		return err
-	}
-
-	for _, r := range c.Results {
+	for _, r := range c.l.Results {
 		fmt.Println(r.Name)
 	}
 
@@ -111,24 +100,18 @@ func commandMap(c *config) error {
 func commandMapB(c *config) error {
 
 	var url string
-	if c.Previous == nil {
-		return fmt.Errorf("there is not previous page\n")
+	if c.l.Previous == nil {
+		return fmt.Errorf("there is no previous page")
 
 	}
-	url = *c.Previous
-	resp, err := http.Get(url)
+	url = *c.l.Previous
 
+	err := c.getLocations(url)
 	if err != nil {
 		return err
 	}
 
-	decoder := json.NewDecoder(resp.Body)
-	err = decoder.Decode(&c)
-	if err != nil {
-		return err
-	}
-
-	for _, r := range c.Results {
+	for _, r := range c.l.Results {
 		fmt.Println(r.Name)
 	}
 
