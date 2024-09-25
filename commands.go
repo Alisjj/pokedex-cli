@@ -4,33 +4,20 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-
-	"github.com/alisjj/pokedex/pokecache"
 )
 
-type cliCommand struct {
-	name        string
-	description string
-	callback    func(*config) error
-}
-
-type config struct {
-	cache pokecache.Cache
-	l     Location
-}
-
-func getCliCommands(*config) map[string]cliCommand {
+func getCliCommands() map[string]cliCommand {
 
 	return map[string]cliCommand{
 		"help": {
 			name:        "help",
 			description: "Displays a help message",
-			callback:    func(*config) error { return commandHelp() },
+			callback:    commandHelp,
 		},
 		"clear": {
 			name:        "clear",
 			description: "Cleans the screen",
-			callback:    func(*config) error { return commandClear() },
+			callback:    commandClear,
 		},
 		"map": {
 			name:        "map",
@@ -42,32 +29,37 @@ func getCliCommands(*config) map[string]cliCommand {
 			description: "Displays the previous names of 20 location areas",
 			callback:    commandMapB,
 		},
+		"explore": {
+			name:        "explore",
+			description: "Displays details about a particular relationship",
+			callback:    commandExplore,
+		},
 
 		"exit": {
 			name:        "exit",
 			description: "Exit the Pokedex",
-			callback:    func(*config) error { return commandExit() },
+			callback:    commandExit,
 		},
 	}
 }
 
-func commandExit() error {
+func commandExit(cfg *config, url string) error {
 	os.Exit(0)
 	return nil
 }
 
-func commandClear() error {
+func commandClear(cfg *config, url string) error {
 	cmd := exec.Command("clear")
 	cmd.Stdout = os.Stdout
 	cmd.Run()
 	return nil
 }
 
-func commandHelp() error {
+func commandHelp(cfg *config, url string) error {
 	fmt.Println("\nWelcome to Pokedex!")
 	fmt.Println("Usage:")
 
-	for _, i := range getCliCommands(nil) {
+	for _, i := range getCliCommands() {
 		fmt.Printf("\n%v: %v", i.name, i.description)
 
 	}
@@ -75,7 +67,7 @@ func commandHelp() error {
 	return nil
 }
 
-func commandMap(c *config) error {
+func commandMap(c *config, v string) error {
 
 	var url string
 	if c.l.Next != nil {
@@ -97,7 +89,7 @@ func commandMap(c *config) error {
 
 }
 
-func commandMapB(c *config) error {
+func commandMapB(c *config, v string) error {
 
 	var url string
 	if c.l.Previous == nil {
@@ -117,4 +109,20 @@ func commandMapB(c *config) error {
 
 	return nil
 
+}
+
+func commandExplore(c *config, area string) error {
+	err := c.exploreArea(area)
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("Exploring %s....\n", area)
+	fmt.Println("Found Pokemon:")
+
+	for _, r := range c.c.PokemonEncounters {
+		fmt.Printf(" - %s \n", r.Pokemon.Name)
+	}
+
+	return nil
 }

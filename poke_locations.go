@@ -2,40 +2,66 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 )
 
-type Location struct {
-	Count    int     `json:"count"`
-	Next     *string `json:"next"`
-	Previous *string `json:"previous"`
-	Results  []struct {
-		Name string `json:"name"`
-		URL  string `json:"url"`
-	} `json:"results"`
+func getClient(url string) ([]byte, error) {
+	resp, err := http.Get(url)
+	if err != nil {
+		return nil, err
+	}
+	status := resp.StatusCode
+	if status > 299 {
+		return nil, fmt.Errorf("%v", resp.Status)
+	}
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
 }
 
 func (c *config) getLocations(url string) error {
 	if val, ok := c.cache.Get(url); ok {
-
 		if err := json.Unmarshal(val, &c.l); err != nil {
 			return err
 		}
 		return nil
 	}
 
-	resp, err := http.Get(url)
+	data, err := getClient(url)
+	if err != nil {
+		return err
+	}
+	c.cache.Add(url, data)
+
+	if err := json.Unmarshal(data, &c.l); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c *config) exploreArea(area string) error {
+	url := "https://pokeapi.co/api/v2/location-area/" + area
+
+	if val, ok := c.cache.Get(url); ok {
+		if err := json.Unmarshal(val, &c.c); err != nil {
+			return err
+		}
+		return nil
+	}
+
+	data, err := getClient(url)
 
 	if err != nil {
 		return err
 	}
-	data, err := io.ReadAll(resp.Body)
 	c.cache.Add(url, data)
-	if err != nil {
-		return err
-	}
-	if err := json.Unmarshal(data, &c.l); err != nil {
+
+	if err := json.Unmarshal(data, &c.c); err != nil {
 		return err
 	}
 

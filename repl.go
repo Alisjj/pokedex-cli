@@ -22,20 +22,28 @@ func repl() {
 		text := reader.Text()
 		command := cleanInput(text)
 
-		if _, ok := getCliCommands(cfg)[command]; !ok {
+		if _, ok := getCliCommands()[command[0]]; !ok {
 			fmt.Println("command not found")
 			continue
 		}
 
-		err := getCliCommands(cfg)[command].callback(cfg)
+		if len(command) > 1 {
+			err := getCliCommands()[command[0]].callback(cfg, command[1])
+			if err != nil {
+				fmt.Printf("Error: %v\n", err)
+				continue
+			}
+			continue
+		}
+		err := getCliCommands()[command[0]].callback(cfg, "")
 		if err != nil {
-			fmt.Printf("Error: %v", err)
+			fmt.Printf("Error: %v\n", err)
 			continue
 		}
 
 	}
 }
 
-func cleanInput(text string) string {
-	return strings.ToLower(text)
+func cleanInput(text string) []string {
+	return strings.Fields(strings.ToLower(text))
 }
