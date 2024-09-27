@@ -39,6 +39,16 @@ func getCliCommands() map[string]cliCommand {
 			description: "Catches Pokemon and adds them to the user's Pokedex.",
 			callback:    commandCatch,
 		},
+		"inspect": {
+			name:        "inspect",
+			description: "See details about a Pokemon.",
+			callback:    commandInspect,
+		},
+		"pokedex": {
+			name:        "inspect",
+			description: "See details about a Pokemon.",
+			callback:    commandInspect,
+		},
 
 		"exit": {
 			name:        "exit",
@@ -149,6 +159,27 @@ func commandCatch(c *config, name string) error {
 	}
 
 	fmt.Printf("%v escaped!\n", pok.Name)
+	return nil
+
+}
+
+func commandInspect(c *config, name string) error {
+	pokemon, ok := c.p.pokemon[name]
+	if !ok {
+		fmt.Println("you have not caught that pokemon")
+		return nil
+	}
+	fmt.Printf("Name: %s:\n", pokemon.Name)
+	fmt.Printf("Height: %v:\n", pokemon.Height)
+	fmt.Println("Stats:")
+	for _, s := range pokemon.Stats {
+		fmt.Printf(" -%v: %v:\n", s.Stat.Name, s.BaseStat)
+	}
+	fmt.Println("Types:")
+	for _, t := range pokemon.Types {
+		fmt.Printf(" -%v\n", t.Type.Name)
+	}
+
 	return nil
 
 }

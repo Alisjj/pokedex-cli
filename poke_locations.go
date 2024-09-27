@@ -86,6 +86,7 @@ func (c *config) getPokemon(name string) (Pokemon, error) {
 	if err != nil {
 		return p, err
 	}
+	c.cache.Add(url, data)
 
 	if err := json.Unmarshal(data, &p); err != nil {
 		return p, err
