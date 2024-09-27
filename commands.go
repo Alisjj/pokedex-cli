@@ -34,6 +34,11 @@ func getCliCommands() map[string]cliCommand {
 			description: "Displays details about a particular relationship",
 			callback:    commandExplore,
 		},
+		"catch": {
+			name:        "catch",
+			description: "Catches Pokemon and adds them to the user's Pokedex.",
+			callback:    commandCatch,
+		},
 
 		"exit": {
 			name:        "exit",
@@ -125,4 +130,25 @@ func commandExplore(c *config, area string) error {
 	}
 
 	return nil
+}
+
+func commandCatch(c *config, name string) error {
+	pok, err := c.getPokemon(name)
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("Throwing a Pokeball at %v...\n", pok.Name)
+
+	catch := catch(pok.BaseExperience)
+
+	if catch {
+		c.p.pokemon[pok.Name] = pok
+		fmt.Printf("%v was caught!\n", pok.Name)
+		return nil
+	}
+
+	fmt.Printf("%v escaped!\n", pok.Name)
+	return nil
+
 }

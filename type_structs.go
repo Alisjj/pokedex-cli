@@ -70,8 +70,13 @@ type City struct {
 	} `json:"pokemon_encounters"`
 }
 
+type Pokedex struct {
+	pokemon map[string]Pokemon
+}
+
 type config struct {
 	cache pokecache.Cache
 	l     Location
 	c     City
+	p     Pokedex
 }

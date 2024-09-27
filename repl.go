@@ -15,6 +15,7 @@ func repl() {
 	cfg := &config{
 		cache: pokecache.NewCache(5 * time.Minute),
 		l:     Location{},
+		p:     NewPokedex(),
 	}
 	for {
 		fmt.Print("Pokedex> ")

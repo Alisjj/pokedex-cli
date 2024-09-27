@@ -12,10 +12,11 @@ func getClient(url string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	status := resp.StatusCode
-	if status > 299 {
+	defer resp.Body.Close()
+	if resp.StatusCode > 299 {
 		return nil, fmt.Errorf("%v", resp.Status)
 	}
+
 	data, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
@@ -66,4 +67,29 @@ func (c *config) exploreArea(area string) error {
 	}
 
 	return nil
+}
+
+func (c *config) getPokemon(name string) (Pokemon, error) {
+	url := "https://pokeapi.co/api/v2/pokemon/" + name
+
+	p := Pokemon{}
+
+	if val, ok := c.cache.Get(url); ok {
+		if err := json.Unmarshal(val, &p); err != nil {
+			return p, err
+		}
+		return p, nil
+	}
+
+	data, err := getClient(url)
+
+	if err != nil {
+		return p, err
+	}
+
+	if err := json.Unmarshal(data, &p); err != nil {
+		return p, err
+	}
+
+	return p, nil
 }
