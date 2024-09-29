@@ -45,9 +45,9 @@ func getCliCommands() map[string]cliCommand {
 			callback:    commandInspect,
 		},
 		"pokedex": {
-			name:        "inspect",
+			name:        "pokedex",
 			description: "See details about a Pokemon.",
-			callback:    commandInspect,
+			callback:    commandPokedex,
 		},
 
 		"exit": {
@@ -178,6 +178,16 @@ func commandInspect(c *config, name string) error {
 	fmt.Println("Types:")
 	for _, t := range pokemon.Types {
 		fmt.Printf(" -%v\n", t.Type.Name)
+	}
+
+	return nil
+
+}
+
+func commandPokedex(c *config, name string) error {
+	fmt.Println("Your pokedx:")
+	for _, pok := range c.p.pokemon {
+		fmt.Printf(" - %v\n", pok.Name)
 	}
 
 	return nil
